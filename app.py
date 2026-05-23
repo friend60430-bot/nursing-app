@@ -2,8 +2,8 @@ import streamlit as st
 from google import genai
 from google.genai import types
 
-# 設定網頁標題與圖示
-st.set_page_config(page_title="AI 護理紀錄自動整理系統", page_icon="🩺", layout="centered")
+# 【修正 1】將 layout 改為 "wide"（寬版模式），讓網頁與反灰處整體加寬
+st.set_page_config(page_title="AI 護理紀錄自動整理系統", page_icon="🩺", layout="wide")
 
 st.title("🩺 AI 護理紀錄自動整理系統")
 st.write("將破碎、口語化的臨床交班或隨手筆記，自動轉換為標準的醫療紀錄格式。")
@@ -20,7 +20,7 @@ format_type = st.radio("請選擇欲轉換的紀錄格式：", ["SOAP", "Focus C
 raw_notes = st.text_area(
     "請輸入原始口語筆記或交班重點：", 
     placeholder="例如：302床林阿伯，早上10點血壓168/95，頭很脹、有點暈。給予Hydralazine 1amp IV... ",
-    height=150
+    height=180 # 稍微加高輸入框
 )
 
 # 執行轉換按鈕
@@ -69,7 +69,9 @@ if st.button("🪄 開始自動整理", type="primary"):
                 # 顯示結果
                 st.success("✨ 整理完成！")
                 st.markdown("### 📋 生成紀錄結果")
-                st.code(response.text, language="markdown")
+                
+                # 【修正 2】加上 wrap_lines=True，強迫反灰區塊內的文字自動換行
+                st.code(response.text, language="markdown", wrap_lines=True)
                 st.caption("💡 您可以點擊右上角的按鈕直接複製文字。")
                 
             except Exception as e:
