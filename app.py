@@ -2,37 +2,71 @@ import streamlit as st
 from google import genai
 from google.genai import types
 
+# 【後台金鑰隱藏】請在此處填入你的 Gemini 金鑰
+HIDDEN_GEMINI_KEY = "AIzaSyC2UTzsT9VXCqLKMVz8hs7mb8jTimm0kt4"
+
 # 將 layout 改為 "wide"（寬版模式）
 st.set_page_config(page_title="AI 護理紀錄自動整理系統", page_icon="🩺", layout="wide")
 
-# 側邊欄：設定自動填入的預設金鑰
+# ================= 🎨 CSS 樣式：整體文字放大 2 號 =================
+st.markdown("""
+    <style>
+        /* 全域基礎文字放大（大約增加 4px，即大 2 號） */
+        html, body, [data-testid="stWidgetLabel"], p, div, label {
+            font-size: 20px !important;
+        }
+        /* 大標題放大 */
+        h1 {
+            font-size: 2.5rem !important;
+        }
+        /* 中標題放大 */
+        h3 {
+            font-size: 1.8rem !important;
+        }
+        /* 單選按鈕文字放大 */
+        div[data-testid="stRadio"] label {
+            font-size: 20px !important;
+        }
+        /* 輸入框內的文字與預設提示字放大 */
+        textarea, input {
+            font-size: 20px !important;
+        }
+        /* 反灰結果區塊的文字放大 */
+        code, pre {
+            font-size: 19px !important;
+            line-height: 1.6 !important;
+        }
+        /* 側邊欄文字微調 */
+        [data-testid="stSidebar"] {
+            min-width: 320px;
+        }
+    </style>
+""", unsafe_allow_html=True)
+# =============================================================
+
+# ================= 🔒 左邊面板：安全登入設計 =================
 with st.sidebar:
-    st.header("🔑 API 設定")
+    st.header("🔐 系統安全登入")
     
-    # 【請在此處填入你的 Gemini 金鑰】
-    default_key = "AIzaSyC2UTzsT9VXCqLKMVz8hs7mb8jTimm0kt4"
+    # 將密碼輸入框移至左邊面板
+    login_password = st.text_input("請輸入系統登入密碼：", type="password")
     
-    # 自動填入金鑰，並隱藏欄位內容
-    api_key = st.text_input("請輸入您的 Gemini API Key:", value=default_key, type="password")
-    st.markdown("[如何取得免費的 Gemini API Key?](https://aistudio.google.com/)")
+    st.write("---")
+    st.caption("本系統僅供內部授權人員使用。")
 
-# ================= 🔒 密碼登入關卡設計 =================
-st.title("🔐 系統安全登入")
-
-# 建立一個讓使用者輸入登入密碼的框框
-login_password = st.text_input("本系統僅供內部人員使用，請輸入登入密碼：", type="password")
-
-# 檢查密碼是否正確（設定為你指定的 820719）
+# 檢查左邊面板輸入的密碼是否正確（設定為 820719）
 if login_password != "820719":
+    # 右邊主畫面顯示提示訊息
+    st.title("🔐 歡迎使用 AI 護理紀錄自動整理系統")
     if login_password == "":
-        st.info("💡 請在上方欄位輸入正確的密碼以解鎖系統。")
+        st.info("💡 請在【左側面板】輸入正確的系統密碼以解鎖功能。")
     else:
         st.error("❌ 密碼錯誤！請重新輸入。")
-    st.stop() # 如果密碼不對，程式碼會在此處中斷，不顯示下方的功能
-# =======================================================
+    st.stop() 
+# =============================================================
 
-# ---- 🔓 密碼正確才會顯示以下主畫面 ----
-st.write("---") # 分隔線
+
+# ---- 🔓 密碼正確（820719）才會解鎖顯示以下主畫面 ----
 st.title("🩺 AI 護理紀錄自動整理系統")
 st.write("將破碎、口語化的臨床交班或隨手筆記，自動轉換為標準的醫療紀錄格式。")
 
@@ -42,20 +76,20 @@ format_type = st.radio("請選擇欲轉換的紀錄格式：", ["SOAP", "Focus C
 raw_notes = st.text_area(
     "請輸入原始口語筆記或交班重點：", 
     placeholder="例如：302床林阿伯，早上10點血壓168/95，頭很脹、有點暈。給予Hydralazine 1amp IV... ",
-    height=180
+    height=200 # 稍微加高框框以配合放大後的字體
 )
 
 # 執行轉換按鈕
 if st.button("🪄 開始自動整理", type="primary"):
-    if not api_key:
-        st.error("請在左側邊欄確認已輸入您的 Gemini API Key 才能開始使用喔！")
+    if not HIDDEN_GEMINI_KEY or HIDDEN_GEMINI_KEY == "這裡換成你複製的完整金鑰":
+        st.error("後台金鑰尚未設定正確，請聯繫系統管理員。")
     elif not raw_notes.strip():
         st.warning("請先輸入護理筆記內容。")
     else:
         with st.spinner("AI 正在專業整理中，請稍候..."):
             try:
                 # 初始化 Gemini 客戶端
-                client = genai.Client(api_key=api_key)
+                client = genai.Client(api_key=HIDDEN_GEMINI_KEY)
                 
                 # 設定系統提示詞
                 if format_type == "SOAP":
@@ -92,7 +126,7 @@ if st.button("🪄 開始自動整理", type="primary"):
                 st.success("✨ 整理完成！")
                 st.markdown("### 📋 生成紀錄結果")
                 
-                # 加上 wrap_lines=True，強迫反灰區塊內的文字自動換行
+                # 強迫反灰區塊內的文字自動換行
                 st.code(response.text, language="markdown", wrap_lines=True)
                 st.caption("💡 您可以點擊右上角的按鈕直接複製文字。")
                 
