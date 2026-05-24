@@ -11,17 +11,26 @@ else:
 # 將 layout 改為 "wide"（寬版模式）
 st.set_page_config(page_title="AI 護理紀錄自動整理系統", page_icon="🩺", layout="wide")
 
-# ================= 🎨 CSS 樣式：整體文字放大 2 號 ＆ 精準「只隱藏貓咪」 =================
+# ================= 🎨 CSS 樣式：整體文字放大 2 號 ＆ 終極覆蓋黑貓咪 =================
 st.markdown("""
     <style>
-        /* 第一道防線：利用 CSS 模糊匹配，只要超連結或 SVG 本身與 github 相關，就強制隱藏 */
-        a[href*="github"], svg[class*="github"], path[d*="M12 .297c-6.63"] {
-            display: none !important;
+        /* 🎯 核心大絕招：在右上角貓咪的精準座標上，覆蓋一塊與網頁背景同色的隱形方塊 */
+        header::after {
+            content: "";
+            position: absolute;
+            right: 43px;         /* 精準定位在三個點左邊、Fork右邊的貓咪位置 */
+            top: 12px;
+            width: 35px;         /* 剛好蓋住貓咪的寬度 */
+            height: 35px;        /* 剛好蓋住貓咪的高度 */
+            background-color: #ffffff; /* 配合網頁白底，將貓咪完全塗白抹除 */
+            z-index: 999999;     /* 確保疊在最上層 */
+            pointer-events: auto; /* 阻擋滑鼠點擊，讓使用者點不到底下的連結 */
         }
         
-        /* 確保 Fork 按鈕與三個點選單（MainMenu）不被影響，強制維持顯示 */
-        a[href*="fork"], #MainMenu {
-            display: inline-block !important;
+        /* 額外輔助防線：如果貓咪超連結能被識別，直接將其透明度歸零 */
+        header a[href*="github"] {
+            opacity: 0 !important;
+            pointer-events: none !important;
         }
 
         /* 全域基礎文字放大（大約增加 4px，即大 2 號） */
@@ -55,47 +64,6 @@ st.markdown("""
         }
     </style>
 """, unsafe_allow_html=True)
-# =============================================================
-
-
-# ================= 🚀 JavaScript 第二道防線：精準動態尋找並移除貓咪 =================
-st.components.v1.html("""
-    <script>
-        function hideCatIcon() {
-            // 尋找全網頁父層的所有超連結
-            const allLinks = parent.document.querySelectorAll('a');
-            allLinks.forEach(link => {
-                // 如果這個連結指向 github，或者裡面包裹著貓咪的圖案，就把它隱藏
-                if (link.href && link.href.toLowerCase().includes('github')) {
-                    // 但如果它是 Fork 按鈕，我們要放過它
-                    if (!link.textContent.includes('Fork')) {
-                        link.style.setProperty('display', 'none', 'important');
-                    }
-                }
-            });
-            
-            // 尋找可能直接裸露在外面的 SVG 圖標
-            const allSvgs = parent.document.querySelectorAll('svg');
-            allSvgs.forEach(svg => {
-                if (svg.innerHTML.includes('M12 .297c-6.63') || svg.classList.contains('github')) {
-                    svg.style.setProperty('display', 'none', 'important');
-                }
-            });
-        }
-
-        // 網頁載入時巡邏幾次，確保貓咪一長出來就被消滅
-        let ticks = 0;
-        const catPatrol = setInterval(() => {
-            hideCatIcon();
-            ticks++;
-            if (ticks > 20) clearInterval(catPatrol);
-        }, 200);
-
-        // 監聽網頁變動，防止貓咪因為畫面重新整理又彈出來
-        const catObserver = new MutationObserver(hideCatIcon);
-        catObserver.observe(parent.document.body, { childList: true, subtree: true });
-    </script>
-""", height=0, width=0)
 # =============================================================
 
 
@@ -164,7 +132,7 @@ if st.button("🪄 開始自動整理", type="primary"):
                 
                 if format_type == "SOAP":
                     system_instruction = """
-                    你是一位精通精神醫療科（Psychiatric Ward）與一般內外科臨床護理的資深護理師。
+                    你是一位精通精神醫療科（Psychiatric Ward）與一般內外科臨床護理的資死護理師。
                     請將使用者提供的精神科臨床口語、交班範本片段，整理成正式、精簡且專業的 SOAP 護理紀錄。
 
                     【撰寫準則】：
@@ -186,7 +154,7 @@ if st.button("🪄 開始自動整理", type="primary"):
 
                     【撰寫準則】：
                     1. Focus (焦點): 確立明確的焦點問題（例如：知覺感受改變：幻聽、潛在危險性：自傷、潛在危險性：跌倒、服藥遵從性不佳、高血糖狀態、體液容積改變、準備出院）。
-                    2. D (Data): 包含病人主客觀資料。精準整合病人主訴、行為表现（吐藥、拒藥、言談混亂）、所有臨床數據（各日 F/S 血糖、連續 CPK 抽血追蹤、V/S 數據如 116/65 mmHg、I/O 及 BW）與生理狀態（服藥後軟腳、步態、留置尿管順暢色黃等）。
+                    2. D (Data): 包含病人主客觀資料。精準整合病人主訴、行為表現（吐藥、拒藥、言談混亂）、所有臨床數據（各日 F/S 血糖、連續 CPK 抽血追蹤、V/S 數據如 116/65 mmHg、I/O 及 BW）與生理狀態（服藥後軟腳、步態、留置尿管順暢色黃等）。
                     3. A (Action): 記錄護理人員執行的醫療與護理措施（如：予傾聽、適時安撫、加強防跌注意事項、加強規則服藥衛教與執行服藥監督、依醫囑調整藥物與施打點滴/抗生素、維持尿管/約束護理、預備 MBD 衛教等）。
                     4. R (Response): 記錄病人接受措施後的反應或當前評估（如：勸說後可配合服下藥物、主訴幻聽改善、心情趨平靜、外出狀況可等）。
                     5. T (Teaching): 若有相關衛教請精簡列出（如：防跌衛教、糖尿病飲食與用藥指導、規則服藥重要性，若無則可省略或併入A）。
