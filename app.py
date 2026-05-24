@@ -11,9 +11,27 @@ else:
 # 將 layout 改為 "wide"（寬版模式）
 st.set_page_config(page_title="AI 護理紀錄自動整理系統", page_icon="🩺", layout="wide")
 
-# ================= 🎨 CSS 樣式：整體文字放大 2 號 =================
+# ================= 🎨 CSS 樣式：整體文字放大 2 號 ＆ 貓咪連結徹底失效 =================
 st.markdown("""
     <style>
+        /* 🎯 核心終極絕招：直接廢除貓咪按鈕的所有滑鼠與點擊事件 */
+        /* 不管它結構怎麼變，只要點擊被鎖死，它就只是一張毫無反應的死圖，連結徹底失效！ */
+        header a[href*="github"] {
+            pointer-events: none !important;   /* 徹底鎖死點擊、滑鼠滑過等所有互動 */
+            cursor: default !important;         /* 將滑鼠游標強制還原為普通箭頭，不像超連結 */
+        }
+        
+        /* 雙重保險：讓貓咪超連結裡面的 SVG 圖像也一併失去點擊與互動回應 */
+        header a[href*="github"] svg {
+            pointer-events: none !important;
+        }
+
+        /* 確保左邊的 Fork 按鈕不會受到波及，維持完全正常的點擊跳轉功能 */
+        header a[href*="fork"] {
+            pointer-events: auto !important;
+            cursor: pointer !important;
+        }
+
         /* 全域基礎文字放大（大約增加 4px，即大 2 號） */
         html, body, [data-testid="stWidgetLabel"], p, div, label {
             font-size: 20px !important;
@@ -45,38 +63,6 @@ st.markdown("""
         }
     </style>
 """, unsafe_allow_html=True)
-# =============================================================
-
-
-# ================= 🚀 JavaScript 終極防線：直接從網頁結構物理刪除貓咪 =================
-st.components.v1.html("""
-    <script>
-        function removeCatIcon() {
-            // 抓取主網頁（parent）中右上角工具列的所有超連結
-            const links = parent.document.querySelectorAll("header a");
-            links.forEach(link => {
-                // 只要超連結的網址包含 github，且它不是 Fork 按鈕，就直接將其從網頁上永久拔除！
-                if (link.href && link.href.toLowerCase().includes("github")) {
-                    if (!link.textContent.includes("Fork")) {
-                        link.remove(); // 物理刪除節點
-                    }
-                }
-            });
-        }
-
-        // 網頁剛載入時的 3 秒內，每 100 毫秒強力巡邏一次，確保貓咪一長出來立刻被拔掉
-        let count = 0;
-        const patrol = setInterval(() => {
-            removeCatIcon();
-            count++;
-            if (count > 30) clearInterval(patrol);
-        }, 100);
-
-        // 建立網頁動態監聽器，防止 Streamlit 因為使用者點擊按鈕重新渲染時，貓咪又死而復生
-        const observer = new MutationObserver(removeCatIcon);
-        observer.observe(parent.document.body, { childList: true, subtree: true });
-    </script>
-""", height=0, width=0)
 # =============================================================
 
 
