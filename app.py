@@ -1,4 +1,5 @@
 import streamlit as st
+import time  # 引入時間模組以製作轉跳倒數效果
 from google import genai
 from google.genai import types
 
@@ -56,6 +57,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 # =============================================================
 
+# 初始化一個狀態變數，用來記錄使用者是否已經成功通過轉跳畫面
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
+
 # ================= 🔒 左邊面板：安全登入設計 =================
 with st.sidebar:
     st.header("🔐 系統安全登入")
@@ -65,16 +70,35 @@ with st.sidebar:
 
 # 檢查密碼 (820719)
 if login_password != "820719":
+    # 只要密碼被改掉、或還沒輸入，就把驗證狀態重設為 False
+    st.session_state["authenticated"] = False
+    
     st.title("🔐 歡迎使用 AI 護理紀錄自動整理系統")
     if login_password == "":
         st.info("💡 請在【左側面板】輸入正確的系統密碼以解鎖功能。")
     else:
         st.error("❌ 密碼錯誤！請重新輸入。")
     st.stop() 
+
+# 如果密碼正確，且先前尚未觸發過轉跳畫面
+if login_password == "820719" and not st.session_state["authenticated"]:
+    # 顯示精緻的轉跳安全認證畫面
+    st.title("🔐 安全認證成功")
+    st.success("✅ 密碼正確！正在進行安全加密連線...")
+    
+    # 使用進度條與倒數模擬轉跳動效
+    progress_bar = st.progress(0)
+    for percent_complete in range(100):
+        time.sleep(0.015)  # 總共大約轉跳等待 1.5 秒
+        progress_bar.progress(percent_complete + 1)
+        
+    # 轉跳完成，將狀態標記為 True，並強制重新整理網頁進入主系統
+    st.session_state["authenticated"] = True
+    st.rerun()
 # =============================================================
 
 
-# ---- 🔓 密碼正確（820719）才會解鎖顯示以下主畫面 ----
+# ---- 🔓 轉跳成功後才會解鎖顯示以下主畫面 ----
 st.title("🩺 AI 護理紀錄自動整理系統")
 st.write("將破碎、口語化的臨床交班或隨手筆記，自動轉換為標準的醫療紀錄格式。")
 
@@ -151,4 +175,4 @@ if st.button("🪄 開始自動整理", type="primary"):
                 st.caption("💡 您可以點擊右上角的按鈕直接複製文字。")
                 
             except Exception as e:
-                st.error(f"轉換過程中發生錯誤: {str(e)}")
+                st.error(f"轉換過程中發生錯誤:
