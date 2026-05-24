@@ -111,8 +111,8 @@ raw_notes = st.text_area(
     height=250 
 )
 
-# 執行轉換按鈕
-if st.button("🪄 開始自動整理", type="primary"):
+# 🎯 執行轉換按鈕（已在文字前方加入「▶️」手勢符號，並在後方加入「⚡」符號）
+if st.button("👉 🪄 開始自動整理 ⚡", type="primary"):
     if HIDDEN_GEMINI_KEY == "未設定":
         st.error("後台安全密鑰尚未設定，請先至 Streamlit 後台 Secrets 填寫 GEMINI_API_KEY。")
     elif not raw_notes.strip():
