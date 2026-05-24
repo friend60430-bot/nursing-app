@@ -11,25 +11,10 @@ else:
 # 將 layout 改為 "wide"（寬版模式）
 st.set_page_config(page_title="AI 護理紀錄自動整理系統", page_icon="🩺", layout="wide")
 
-# ================= 🎨 CSS 樣式：整體文字放大 2 號 ＆ 強力隱藏 GitHub 相關圖示 =================
+# ================= 🎨 CSS 樣式：整體文字放大 2 號 =================
 st.markdown("""
     <style>
-        /* 1. 核心大絕招：只要連結網址包含 github.com，一律徹底隱藏（包含貓咪與 Fork） */
-        header a[href*="github.com"] {
-            display: none !important;
-        }
-        
-        /* 2. 輔助防線：隱藏可能包裹貓咪圖示的部署與狀態組件 */
-        .stAppDeployButton, [data-testid="stStatusWidget"] {
-            display: none !important;
-        }
-        
-        /* 3. 保留最右邊的三個點選單，但移除裡面可能連回 GitHub 的選項 */
-        iframe[title="Import external policy"] { 
-            display: none !important; 
-        }
-        
-        /* 4. 全域基礎文字放大（大約增加 4px，即大 2 號） */
+        /* 全域基礎文字放大（大約增加 4px，即大 2 號） */
         html, body, [data-testid="stWidgetLabel"], p, div, label {
             font-size: 20px !important;
         }
@@ -61,6 +46,61 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 # =============================================================
+
+
+# ================= 🚀 JavaScript 終極大絕招：全自動巡邏拔除貓咪與 Fork =================
+# 透過前端腳本主動尋找、刪除任何包含 GitHub 連結、貓咪圖標或 Fork 字樣的元素，保留三個點選單
+st.components.v1.html("""
+    <script>
+        function removeGitHubElements() {
+            // 1. 尋找所有包含 github 或 fork 的超連結與按鈕
+            const links = parent.document.querySelectorAll('header a, parent document a, header button, .stAppDeployButton');
+            links.forEach(el => {
+                if (el.href && (el.href.includes('github.com') || el.href.includes('github'))) {
+                    el.style.setProperty('display', 'none', 'important');
+                    el.remove();
+                }
+                if (el.textContent && (el.textContent.includes('Fork') || el.textContent.includes('deploy'))) {
+                    el.style.setProperty('display', 'none', 'important');
+                    el.remove();
+                }
+            });
+
+            // 2. 針對右上角特定的 Streamlit 狀態工具列進行全面掃描
+            const toolbarElements = parent.document.querySelectorAll('header div[class^="st-emotion-cache-"]');
+            toolbarElements.forEach(div => {
+                // 如果裡面有 SVG 且不是三個點，通常就是貓咪或 Fork
+                if (div.querySelector('svg') && !div.querySelector('button[id="MainMenu"]')) {
+                    if (div.innerHTML.includes('github') || div.innerHTML.includes('Fork') || div.innerHTML.includes('svg')) {
+                        // 精準保留三個點按鈕 (MainMenu)，其餘隱藏
+                        const hasMainMenu = div.querySelector('button[id="MainMenu"]') || div.id === 'MainMenu';
+                        if (!hasMainMenu) {
+                            div.style.setProperty('display', 'none', 'important');
+                        }
+                    }
+                }
+            });
+            
+            // 3. 直接封殺特定類名
+            const deployBtn = parent.document.querySelector('.stAppDeployButton');
+            if (deployBtn) deployBtn.remove();
+        }
+
+        // 啟動後台每 0.3 秒巡邏一次（持續 10 秒，確保網頁完全載入後也被消滅）
+        let count = 0;
+        const interval = setInterval(() => {
+            removeGitHubElements();
+            count++;
+            if (count > 30) clearInterval(interval); 
+        }, 300);
+
+        // 同時註冊網頁變動監聽器，只要貓咪敢長出來就立刻拔掉
+        const observer = new MutationObserver(removeGitHubElements);
+        observer.observe(parent.document.body, { childList: true, subtree: true });
+    </script>
+""", height=0, width=0)
+# =============================================================
+
 
 # 初始化安全驗證狀態
 if "login_success" not in st.session_state:
@@ -151,7 +191,7 @@ if st.button("🪄 開始自動整理", type="primary"):
                     1. Focus (焦點): 確立明確的焦點問題（例如：知覺感受改變：幻聽、潛在危險性：自傷、潛在危險性：跌倒、服藥遵從性不佳、高血糖狀態、體液容積改變、準備出院）。
                     2. D (Data): 包含病人主客觀資料。精準整合病人主訴、行為表現（吐藥、拒藥、言談混亂）、所有臨床數據（各日 F/S 血糖、連續 CPK 抽血追蹤、V/S 數據如 116/65 mmHg、I/O 及 BW）與生理狀態（服藥後軟腳、步態、留置尿管順暢色黃等）。
                     3. A (Action): 記錄護理人員執行的醫療與護理措施（如：予傾聽、適時安撫、加強防跌注意事項、加強規則服藥衛教與執行服藥監督、依醫囑調整藥物與施打點滴/抗生素、維持尿管/約束護理、預備 MBD 衛教等）。
-                    4. R (Response): 記錄病人接受措施後的反應或當前評估（如：勸說後可配合服下藥物、主訴幻聽改善、心情趨平靜、外出狀況可等）。
+                    4. R (Response): 記錄病人接受措施後的反应或當前評估（如：勸說後可配合服下藥物、主訴幻聽改善、心情趨平靜、外出狀況可等）。
                     5. T (Teaching): 若有相關衛教請精簡列出（如：防跌衛教、糖尿病飲食與用藥指導、規則服藥重要性，若無則可省略或併入A）。
                     
                     【文字要求】：結構清晰、重點突出，醫學術語與縮寫呈現需精準專業。
