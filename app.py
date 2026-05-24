@@ -11,17 +11,25 @@ else:
 # 將 layout 改為 "wide"（寬版模式）
 st.set_page_config(page_title="AI 護理紀錄自動整理系統", page_icon="🩺", layout="wide")
 
-# ================= 🎨 CSS 樣式：整體文字放大 2 號 ＆ 精準隱藏貓咪圖示 =================
+# ================= 🎨 CSS 樣式：整體文字放大 2 號 ＆ 強力隱藏 GitHub 相關圖示 =================
 st.markdown("""
     <style>
-        /* 精準隱藏右上角的 GitHub 連結與 Fork 按鈕，保留三個點選單 */
-        .stAppDeployButton, st-emotion-cache-1scve0b, [data-testid="stStatusWidget"] a {
+        /* 1. 核心大絕招：只要連結網址包含 github.com，一律徹底隱藏（包含貓咪與 Fork） */
+        header a[href*="github.com"] {
             display: none !important;
         }
-        header [class^="st-emotion-cache-"] a { display: none !important; }
-        header svg path[d^="M12 .297c-6.63"] { display: none !important; }
         
-        /* 全域基礎文字放大（大約增加 4px，即大 2 號） */
+        /* 2. 輔助防線：隱藏可能包裹貓咪圖示的部署與狀態組件 */
+        .stAppDeployButton, [data-testid="stStatusWidget"] {
+            display: none !important;
+        }
+        
+        /* 3. 保留最右邊的三個點選單，但移除裡面可能連回 GitHub 的選項 */
+        iframe[title="Import external policy"] { 
+            display: none !important; 
+        }
+        
+        /* 4. 全域基礎文字放大（大約增加 4px，即大 2 號） */
         html, body, [data-testid="stWidgetLabel"], p, div, label {
             font-size: 20px !important;
         }
@@ -112,7 +120,6 @@ if st.button("🪄 開始自動整理", type="primary"):
     else:
         with st.spinner("AI 正在專業整理中，請稍候..."):
             try:
-                # 這裡改用全新的標準不報錯寫法來初始化 Google GenAI
                 from google import genai
                 from google.genai import types
                 
@@ -165,6 +172,5 @@ if st.button("🪄 開始自動整理", type="primary"):
                 st.caption("💡 您可以點擊右上角的按鈕直接複製文字。")
                 
             except Exception as e:
-                # 這裡改用普通字串拼接，保證百分之百不會觸發 f-string 語法失誤
                 st.error("轉換過程中發生錯誤，請檢查後台金鑰或網路連線。錯誤訊息如下：")
                 st.exception(e)
