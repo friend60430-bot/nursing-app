@@ -11,58 +11,58 @@ else:
 # 將 layout 改為 "wide"（寬版模式）
 st.set_page_config(page_title="AI 護理紀錄自動整理系統", page_icon="🩺", layout="wide")
 
-# ================= 🎨 CSS 樣式：整體文字放大 2 號 ＆ 貓咪連結徹底失效 =================
-st.markdown("""
-    <style>
-        /* 🎯 核心終極絕招：直接廢除貓咪按鈕的所有滑鼠與點擊事件 */
-        /* 不管它結構怎麼變，只要點擊被鎖死，它就只是一張毫無反應的死圖，連結徹底失效！ */
-        header a[href*="github"] {
-            pointer-events: none !important;   /* 徹底鎖死點擊、滑鼠滑過等所有互動 */
-            cursor: default !important;         /* 將滑鼠游標強制還原為普通箭頭，不像超連結 */
-        }
-        
-        /* 雙重保險：讓貓咪超連結裡面的 SVG 圖像也一併失去點擊與互動回應 */
-        header a[href*="github"] svg {
-            pointer-events: none !important;
-        }
+# ================= 🎨 程式碼完全隱藏區塊（物理隱藏黑貓咪 ＆ 全域文字放大） =================
+# 使用 st.empty() 建立一個完全無痛的隱形容器，只負責在幕後注入 CSS，畫面不留任何程式碼痕跡
+with st.empty():
+    st.markdown("""
+        <style>
+            /* 🎯 終極隱藏：直接鎖定包含 github 的超連結按鈕，讓它從畫面上徹底消失、不留痕跡 */
+            header a[href*="github"]:not([href*="fork"]) {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                width: 0 !important;
+                height: 0 !important;
+                pointer-events: none !important;
+            }
+            
+            /* 確保 Fork 按鈕能維持原本的樣式與點擊功能，不被隱藏 */
+            header a[href*="fork"] {
+                display: inline-flex !important;
+                color: #31333F !important;
+            }
 
-        /* 確保左邊的 Fork 按鈕不會受到波及，維持完全正常的點擊跳轉功能 */
-        header a[href*="fork"] {
-            pointer-events: auto !important;
-            cursor: pointer !important;
-        }
-
-        /* 全域基礎文字放大（大約增加 4px，即大 2 號） */
-        html, body, [data-testid="stWidgetLabel"], p, div, label {
-            font-size: 20px !important;
-        }
-        /* 大標題放大 */
-        h1 {
-            font-size: 2.5rem !important;
-        }
-        /* 中標題放大 */
-        h3 {
-            font-size: 1.8rem !important;
-        }
-        /* 單選按鈕文字放大 */
-        div[data-testid="stRadio"] label {
-            font-size: 20px !important;
-        }
-        /* 輸入框內的文字與預設提示字放大 */
-        textarea, input {
-            font-size: 20px !important;
-        }
-        /* 反灰結果區塊的文字放大 */
-        code, pre {
-            font-size: 19px !important;
-            line-height: 1.6 !important;
-        }
-        /* 側邊欄寬度微調 */
-        [data-testid="stSidebar"] {
-            min-width: 320px;
-        }
-    </style>
-""", unsafe_allow_html=True)
+            /* 全域基礎文字放大（大約增加 4px，即大 2 號） */
+            html, body, [data-testid="stWidgetLabel"], p, div, label {
+                font-size: 20px !important;
+            }
+            /* 大標題放大 */
+            h1 {
+                font-size: 2.5rem !important;
+            }
+            /* 中標題放大 */
+            h3 {
+                font-size: 1.8rem !important;
+            }
+            /* 單選按鈕文字放大 */
+            div[data-testid="stRadio"] label {
+                font-size: 20px !important;
+            }
+            /* 輸入框內的文字與預設提示字放大 */
+            textarea, input {
+                font-size: 20px !important;
+            }
+            /* 反灰結果區塊的文字放大 */
+            code, pre {
+                font-size: 19px !important;
+                line-height: 1.6 !important;
+            }
+            /* 側邊欄寬度微調 */
+            [data-testid="stSidebar"] {
+                min-width: 320px;
+            }
+        </style>
+    """, unsafe_allow_html=True)
 # =============================================================
 
 
@@ -154,7 +154,7 @@ if st.button("🪄 開始自動整理", type="primary"):
                     【撰寫準則】：
                     1. Focus (焦點): 確立明確的焦點問題（例如：知覺感受改變：幻聽、潛在危險性：自傷、潛在危險性：跌倒、服藥遵從性不佳、高血糖狀態、體液容積改變、準備出院）。
                     2. D (Data): 包含病人主客觀資料。精準整合病人主訴、行為表現（吐藥、拒藥、言談混亂）、所有臨床數據（各日 F/S 血糖、連續 CPK 抽血追蹤、V/S 數據如 116/65 mmHg、I/O 及 BW）與生理狀態（服藥後軟腳、步態、留置尿管順暢色黃等）。
-                    3. A (Action): 記錄護理人員執行的醫療與護理措施（如：予傾聽、適時安撫、加強防跌注意事項、加強規則服藥衛教與執行服藥監督、依醫囑調整藥物與施打點滴/抗生素、維持尿管/約束護理、預備 MBD 衛教等）。
+                    3. A (Action): 記錄護理人員執行的醫療與/護理措施（如：予傾聽、適時安撫、加強防跌注意事項、加強規則服藥衛教與執行服藥監督、依醫囑調整藥物與施打點滴/抗生素、維持尿管/約束護理、預備 MBD 衛教等）。
                     4. R (Response): 記錄病人接受措施後的反應或當前評估（如：勸說後可配合服下藥物、主訴幻聽改善、心情趨平靜、外出狀況可等）。
                     5. T (Teaching): 若有相關衛教請精簡列出（如：防跌衛教、糖尿病飲食與用藥指導、規則服藥重要性，若無則可省略或併入A）。
                     
