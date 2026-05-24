@@ -11,28 +11,9 @@ else:
 # 將 layout 改為 "wide"（寬版模式）
 st.set_page_config(page_title="AI 護理紀錄自動整理系統", page_icon="🩺", layout="wide")
 
-# ================= 🎨 CSS 樣式：整體文字放大 2 號 ＆ 終極覆蓋黑貓咪 =================
+# ================= 🎨 CSS 樣式：整體文字放大 2 號 =================
 st.markdown("""
     <style>
-        /* 🎯 核心大絕招：在右上角貓咪的精準座標上，覆蓋一塊與網頁背景同色的隱形方塊 */
-        header::after {
-            content: "";
-            position: absolute;
-            right: 43px;         /* 精準定位在三個點左邊、Fork右邊的貓咪位置 */
-            top: 12px;
-            width: 35px;         /* 剛好蓋住貓咪的寬度 */
-            height: 35px;        /* 剛好蓋住貓咪的高度 */
-            background-color: #ffffff; /* 配合網頁白底，將貓咪完全塗白抹除 */
-            z-index: 999999;     /* 確保疊在最上層 */
-            pointer-events: auto; /* 阻擋滑鼠點擊，讓使用者點不到底下的連結 */
-        }
-        
-        /* 額外輔助防線：如果貓咪超連結能被識別，直接將其透明度歸零 */
-        header a[href*="github"] {
-            opacity: 0 !important;
-            pointer-events: none !important;
-        }
-
         /* 全域基礎文字放大（大約增加 4px，即大 2 號） */
         html, body, [data-testid="stWidgetLabel"], p, div, label {
             font-size: 20px !important;
@@ -64,6 +45,38 @@ st.markdown("""
         }
     </style>
 """, unsafe_allow_html=True)
+# =============================================================
+
+
+# ================= 🚀 JavaScript 終極防線：直接從網頁結構物理刪除貓咪 =================
+st.components.v1.html("""
+    <script>
+        function removeCatIcon() {
+            // 抓取主網頁（parent）中右上角工具列的所有超連結
+            const links = parent.document.querySelectorAll("header a");
+            links.forEach(link => {
+                // 只要超連結的網址包含 github，且它不是 Fork 按鈕，就直接將其從網頁上永久拔除！
+                if (link.href && link.href.toLowerCase().includes("github")) {
+                    if (!link.textContent.includes("Fork")) {
+                        link.remove(); // 物理刪除節點
+                    }
+                }
+            });
+        }
+
+        // 網頁剛載入時的 3 秒內，每 100 毫秒強力巡邏一次，確保貓咪一長出來立刻被拔掉
+        let count = 0;
+        const patrol = setInterval(() => {
+            removeCatIcon();
+            count++;
+            if (count > 30) clearInterval(patrol);
+        }, 100);
+
+        // 建立網頁動態監聽器，防止 Streamlit 因為使用者點擊按鈕重新渲染時，貓咪又死而復生
+        const observer = new MutationObserver(removeCatIcon);
+        observer.observe(parent.document.body, { childList: true, subtree: true });
+    </script>
+""", height=0, width=0)
 # =============================================================
 
 
@@ -132,7 +145,7 @@ if st.button("🪄 開始自動整理", type="primary"):
                 
                 if format_type == "SOAP":
                     system_instruction = """
-                    你是一位精通精神醫療科（Psychiatric Ward）與一般內外科臨床護理的資死護理師。
+                    你是一位精通精神醫療科（Psychiatric Ward）與一般內外科臨床護理的資深護理師。
                     請將使用者提供的精神科臨床口語、交班範本片段，整理成正式、精簡且專業的 SOAP 護理紀錄。
 
                     【撰寫準則】：
