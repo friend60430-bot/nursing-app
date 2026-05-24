@@ -1,7 +1,5 @@
 import streamlit as st
-import time  # 引入時間模組以製作轉跳倒數效果
-from google import genai
-from google.genai import types
+import time
 
 # ================= 🔒 從後台安全保險箱讀取金鑰 =================
 if "GEMINI_API_KEY" in st.secrets:
@@ -20,7 +18,6 @@ st.markdown("""
         .stAppDeployButton, st-emotion-cache-1scve0b, [data-testid="stStatusWidget"] a {
             display: none !important;
         }
-        iframe[title="Import external policy"] { display: none !important; }
         header [class^="st-emotion-cache-"] a { display: none !important; }
         header svg path[d^="M12 .297c-6.63"] { display: none !important; }
         
@@ -57,9 +54,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 # =============================================================
 
-# 初始化一個狀態變數，用來記錄使用者是否已經成功通過轉跳畫面
-if "authenticated" not in st.session_state:
-    st.session_state["authenticated"] = False
+# 初始化安全驗證狀態
+if "login_success" not in st.session_state:
+    st.session_state["login_success"] = False
 
 # ================= 🔒 左邊面板：安全登入設計 =================
 with st.sidebar:
@@ -68,33 +65,28 @@ with st.sidebar:
     st.write("---")
     st.caption("本系統僅供內部授權人員使用。")
 
-# 檢查密碼 (820719)
-if login_password != "820719":
-    # 只要密碼被改掉、或還沒輸入，就把驗證狀態重設為 False
-    st.session_state["authenticated"] = False
-    
+# 密碼檢查與轉跳邏輯
+if login_password == "820719":
+    if not st.session_state["login_success"]:
+        st.title("🔐 安全認證成功")
+        st.success("✅ 密碼正確！正在進行安全加密連線...")
+        
+        # 轉跳動畫進度條
+        progress_bar = st.progress(0)
+        for percent_complete in range(100):
+            time.sleep(0.01)
+            progress_bar.progress(percent_complete + 1)
+            
+        st.session_state["login_success"] = True
+        st.rerun()
+else:
+    st.session_state["login_success"] = False
     st.title("🔐 歡迎使用 AI 護理紀錄自動整理系統")
     if login_password == "":
         st.info("💡 請在【左側面板】輸入正確的系統密碼以解鎖功能。")
     else:
         st.error("❌ 密碼錯誤！請重新輸入。")
-    st.stop() 
-
-# 如果密碼正確，且先前尚未觸發過轉跳畫面
-if login_password == "820719" and not st.session_state["authenticated"]:
-    # 顯示精緻的轉跳安全認證畫面
-    st.title("🔐 安全認證成功")
-    st.success("✅ 密碼正確！正在進行安全加密連線...")
-    
-    # 使用進度條與倒數模擬轉跳動效
-    progress_bar = st.progress(0)
-    for percent_complete in range(100):
-        time.sleep(0.015)  # 總共大約轉跳等待 1.5 秒
-        progress_bar.progress(percent_complete + 1)
-        
-    # 轉跳完成，將狀態標記為 True，並強制重新整理網頁進入主系統
-    st.session_state["authenticated"] = True
-    st.rerun()
+    st.stop()
 # =============================================================
 
 
@@ -120,10 +112,12 @@ if st.button("🪄 開始自動整理", type="primary"):
     else:
         with st.spinner("AI 正在專業整理中，請稍候..."):
             try:
-                # 初始化 Gemini 客戶端
+                # 這裡改用全新的標準不報錯寫法來初始化 Google GenAI
+                from google import genai
+                from google.genai import types
+                
                 client = genai.Client(api_key=HIDDEN_GEMINI_KEY)
                 
-                # 設定專屬精神科臨床思維與範本模擬的系統提示詞
                 if format_type == "SOAP":
                     system_instruction = """
                     你是一位精通精神醫療科（Psychiatric Ward）與一般內外科臨床護理的資深護理師。
@@ -156,7 +150,6 @@ if st.button("🪄 開始自動整理", type="primary"):
                     【文字要求】：結構清晰、重點突出，醫學術語與縮寫呈現需精準專業。
                     """
 
-                # 呼叫模型
                 response = client.models.generate_content(
                     model='gemini-2.5-flash',
                     contents=f"請將以下臨床交班內容整理成標準的專業護理紀錄：\n{raw_notes}",
@@ -166,13 +159,12 @@ if st.button("🪄 開始自動整理", type="primary"):
                     )
                 )
                 
-                # 顯示結果
                 st.success("✨ 整理完成！")
                 st.markdown("### 📋 生成紀錄結果")
-                
-                # 強迫反灰區塊內的文字自動換行
                 st.code(response.text, language="markdown", wrap_lines=True)
                 st.caption("💡 您可以點擊右上角的按鈕直接複製文字。")
                 
             except Exception as e:
-                st.error(f"轉換過程中發生錯誤:
+                # 這裡改用普通字串拼接，保證百分之百不會觸發 f-string 語法失誤
+                st.error("轉換過程中發生錯誤，請檢查後台金鑰或網路連線。錯誤訊息如下：")
+                st.exception(e)
