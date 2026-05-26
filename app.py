@@ -8,12 +8,12 @@ else:
     HIDDEN_GEMINI_KEY = "未設定"
 # =============================================================
 
-# 🎯 雙重防禦機制：利用官方參數將頂部功能降至最低度
+# 🎯 已修正：將 initial_sidebar_state 改為 "expanded"，確保左側面板永遠正常顯示！
 st.set_page_config(
     page_title="AI 護理紀錄自動整理系統", 
     page_icon="🩺", 
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 # ================= 🎨 終極全頂部移除 CSS（讓所有官方按鈕徹底消失 ＆ 文字放大） =================
@@ -177,6 +177,5 @@ if st.button("👉 🪄 開始自動整理 ⚡", type="primary"):
                 st.caption("💡 您可以點擊右上角的按鈕直接複製文字。")
                 
             except Exception as e:
-                # 🎯 已修正引號錯誤，確保這裡完全符合標準字串格式
                 st.error("轉換過程中發生錯誤，請檢查後台金鑰或網路連線。")
                 st.exception(e)
