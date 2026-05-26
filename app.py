@@ -8,21 +8,26 @@ else:
     HIDDEN_GEMINI_KEY = "未設定"
 # =============================================================
 
-# 將 layout 改為 "wide"（寬版模式）
-st.set_page_config(page_title="AI 護理紀錄自動整理系統", page_icon="🩺", layout="wide")
+# 🎯 雙重防禦機制：利用官方參數將頂部功能降至最低度
+st.set_page_config(
+    page_title="AI 護理紀錄自動整理系統", 
+    page_icon="🩺", 
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
-# ================= 🎨 終極全頂部移除 CSS（讓所有官方按鈕徹底蒸發 ＆ 文字放大） =================
+# ================= 🎨 終極全頂部移除 CSS（讓所有官方按鈕徹底消失 ＆ 文字放大） =================
 st.markdown("""
     <style>
         /* 🚨 終極大絕招：直接將 Streamlit 頂部黑邊與所有官方按鈕整排永久隱藏、高度歸零 */
         /* 這會使貓咪、Fork、三個點全部徹底消失，再也無法顯示或點擊 */
-        header {
+        header, [data-testid="stHeader"] {
             display: none !important;
             visibility: hidden !important;
             height: 0px !important;
         }
         
-        /* 修正因為頂部被移除後可能產生的排版空白 */
+        /* 修正頂部被移除後可能產生的網頁排版空白 */
         .main .block-container {
             padding-top: 2rem !important;
         }
@@ -111,7 +116,7 @@ raw_notes = st.text_area(
     height=250 
 )
 
-# 🎯 執行轉換按鈕（已在文字前方加入「▶️」手勢符號，並在後方加入「⚡」符號）
+# 🎯 執行轉換按鈕（已包含符號）
 if st.button("👉 🪄 開始自動整理 ⚡", type="primary"):
     if HIDDEN_GEMINI_KEY == "未設定":
         st.error("後台安全密鑰尚未設定，請先至 Streamlit 後台 Secrets 填寫 GEMINI_API_KEY。")
@@ -172,5 +177,6 @@ if st.button("👉 🪄 開始自動整理 ⚡", type="primary"):
                 st.caption("💡 您可以點擊右上角的按鈕直接複製文字。")
                 
             except Exception as e:
-                st.error("轉換過程中發生錯誤，請檢查後台金鑰或網路連線。錯誤訊息如下：")
+                # 🎯 已修正引號錯誤，確保這裡完全符合標準字串格式
+                st.error("轉換過程中發生錯誤，請檢查後台金鑰或網路連線。")
                 st.exception(e)
